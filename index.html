@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+   <head>
+      <title>SetCredentials</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	  <link rel="stylesheet" href="http://jqueryui.com/themes/base/jquery.ui.all.css");
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="http://jqueryui.com/ui/jquery.ui.core.js"></script>
+		<script type="text/javascript" src="http://jqueryui.com/ui/jquery.ui.widget.js"></script>
+		<script type="text/javascript" src="http://jqueryui.com/ui/jquery.ui.tabs.js"></script>
+      <!--<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?
+v=6.3"></script>-->
+	
+      <script type="text/javascript">
+/*
+
+
+4254 S Biscay Cir
+18351 E Hampden Pl
+16983 E Ithaca Cir
+16968 E Kent Dr
+19291 E Quincy Ave
+17806 E Loyola Dr
+
+*/
+
+var applyDistances = function(locations) {
+	startLocation.distance = 0;
+	locations.push(startLocation);
+
+	addNextOrderedLocation(locations);
+	
+};
+
+function mapRoute() {
+	var points = [];
+	for (var i = 0; i < orderedLocations.length; i++) {
+		points.push(orderedLocations[i].lat + ', ' + orderedLocations[i].lon);
+		 var shape = new VEShape(VEShapeType.Pushpin, new VELatLong(orderedLocations[i].lat, orderedLocations[i].lon));
+          shape.SetTitle(orderedLocations[i].address);
+          //shape.SetDescription('This is shape number '+pinid);
+          //pinid++;
+          map.AddShape(shape);
+	}
+	
+	try {
+		map.GetDirections(points);
+	} catch (ex) {
+		alert(ex.message);
+	}
+}
+
+function addNextOrderedLocation(locations) {
+	var minDistanceLocation = locations[0];
+        for (var i in locations) {
+            minDistanceLocation = minDistanceLocation.distance < locations[i].distance ? minDistanceLocation : locations[i];
+        }
+		
+        // if this is true, there is no path to the next point
+        if (minDistanceLocation.distance === Infinity) {
+         alert('could not find a path between ' + minDistanceLocation.address + ' and the remaining ' + locations.length + ' points.');
+       }
+	   
+       locations.splice(locations.indexOf(minDistanceLocation), 1);
+        orderedLocations.push(minDistanceLocation);		
+		
+	if (locations.length === 0) {
+		// remove the starting address
+		orderedLocations.splice(0, 1);
+
+		var tabs = $('#tabs');
+		
+		// remove any previous tab setup
+		tabs.tabs('destroy');
+
+		tabs.html('');
+		tabs.append('<ul id="tabNames" />');
+		var tabNamesList = $('ul#tabNames');
+		tabNamesList.html('');
+		for (var i = 0; i < numberOfRoutes; i++) {
+			tabNamesList.append('<li><a href="#tab-' + i + '">Route ' + (i + 1) + '</a></li>');
+			tabs.append('<div id="tab-' + i + '" />');
+		}
+		
+		tabs.tabs();
+		
+		var tabNumber = -1;
+		var waypointsPerRoute = Math.floor(orderedLocations.length / numberOfRoutes);
+		var waypointsInRouteCounter = 0; 
+		for (var i = 0; i < orderedLocations.length; i++) {
+			if (tabNumber + 1 < numberOfRoutes && 0 === i % waypointsPerRoute) {
+				
+				tabNumber++;
+				var newTab = $('#tabs div#tab-' + tabNumber);
+				newTab.append('<a target="_blank" href="http://bing.com/maps/default.aspx?v=2&rtp=adr.' + startAddress + ' ' + zipCode + '">Open Route</a>');
+				newTab.append('<ol />');
+			}
+			var tabList = $('#tabs div#tab-' + tabNumber + ' ol');
+			tabList.append('<li>' + orderedLocations[i].address + '  (' + orderedLocations[i].lat + ', ' + orderedLocations[i].lon + ')</li>');
+			var openRouteLink = $('#tabs div#tab-' + tabNumber + ' a');
+			openRouteLink.attr('href', openRouteLink.attr('href') + '~adr.' + orderedLocations[i].address + ' ' + zipCode);
+		}
+	}
+ 
+	// go through each neighbor of minDistanceLocation
+	distanceCalcOperations = [];
+	distanceCalcOperationsCompleted = [];
+	for (var i = 0; i < locations.length; i++) {
+		calcDistance(minDistanceLocation, locations[i], locations, i);
+	}
+}
+
+var distanceCalcOperations = [];
+var distanceCalcOperationsCompleted = [];
+
+function calcDistance(waypoint1, waypoint2, remainingLocations, index) {
+	distanceCalcOperations[index] = {
+		currentLocation : waypoint1,
+		testLocation : waypoint2,
+		remainingLocations : remainingLocations
+	};
+	var request = 'http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1=' + waypoint1.lat + ',' + waypoint1.lon + '&waypoint.2=' + waypoint2.lat + ',' + waypoint2.lon + '&distanceUnit=mi&jsonp=calcDistanceCallback&jsonso=' + index + '&key=AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv';
+	callRestService(request);
+}
+
+function calcDistanceCallback(result, distanceCalcOperationsIndex) {
+
+	// if the service returns an error, cancel operations and show the error
+	if (200 != result.statusCode) {
+		$('#div').append('<br />Status Code: ' + result.statusCode + ' Description: ' + result.statusDescription);
+		return;
+	}
+
+	var distance = result.resourceSets[0].resources[0].travelDistance;
+	var calcOp = distanceCalcOperations[distanceCalcOperationsIndex];
+	calcOp.distance = distance;
+	
+	distanceCalcOperationsCompleted.push(calcOp);
+	
+	// once all the distance calculations have completed, i.e. if this is the last callback to be called
+	if (distanceCalcOperationsCompleted.length === distanceCalcOperations.length) {
+	
+		// currentLocation came from the minDistanceLocation; it should be the same for all calcOps in this cycle
+		var currentLocation = calcOp.currentLocation;
+		
+		// remainingLocations should be the same for all calcOps in this cycle
+		var remainingLocations = calcOp.remainingLocations;
+		
+		// there is one calcOp per remaining location
+		// if the (currentLocation's distance plus the distance in the remaining location's respective calcOp) is less than the remaining location's current distance,
+		// set remaining location's distance to (currentLocation's distance plus the distance int he remaining lcoation's respective calcOp)
+		
+		// the indexes of remainingLocations and distanceCalcOperationsCompleted should line up exactly
+		for (var i = 0; i < distanceCalcOperationsCompleted.length; i++) {
+		var testDistance = currentLocation.distance + distanceCalcOperationsCompleted[i].distance;
+			if (testDistance < remainingLocations[i].distance) {
+				remainingLocations[i].distance = testDistance;
+			}
+		}
+		
+		addNextOrderedLocation(calcOp.remainingLocations);
+	}
+}
+
+function actOnEachLine(textarea, func) {
+    var lines = textarea.get(0).value.replace(/\r\n/g, "\n").split("\n");
+    var newLines, newValue, i;
+    // Use the map() method of Array where available 
+    if (typeof lines.map != "undefined") {
+        newLines = lines.map(func);
+    } else {
+        newLines = [];
+        i = lines.length;
+        while (i--) {
+            newLines[i] = func(lines[i]);
+        }
+    }
+    textarea.value = newLines.join("\r\n");
+} 
+
+
+function planRoutes() {
+		addresses = [];
+	  geocodedLocations = [];
+	  orderedLocations = [];
+		numberOfRoutes = $('#numberOfRoutesInput').val();
+		
+		actOnEachLine($('#addressesInput'), function (line) {
+			if (!jQuery.trim(line)) {
+				//alert("removing empty line");
+				return;
+			}
+			addresses.push({ address : line });
+		});
+		
+		requestStartLocation(startAddress);
+			
+			for (var i in addresses) {
+				requestLocation(addresses[i]);
+			}
+}
+
+var countryCode = 'US';
+var stateCode = 'CO';
+var zipCode = '80013';
+var locality = 'Aurora';
+var bingMapsApiKey = 'AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv';
+
+var startAddress = '5203 S Picadilly St';
+var startLocation = null;
+
+// gets populated from the textarea
+var addresses = [];
+
+// gets populated from a textbox
+var numberOfRoutes;
+
+var geocodedLocations = [];
+var orderedLocations = [];
+
+ function callRestService(request) 
+ {
+	var script = document.createElement("script");
+	script.setAttribute("type", "text/javascript");
+	script.setAttribute("src", request);
+	document.body.appendChild(script);
+ }
+
+ function requestStartLocation() {
+	var request = 'http://dev.virtualearth.net/REST/v1/Locations/US/CO/80013/Aurora/' + startAddress + '?key=' + bingMapsApiKey + "&jsonp=startLocationGeocodeCallback";
+	callRestService(request);
+}
+ 
+ function requestLocation(addr) { 
+ 
+	var request = 'http://dev.virtualearth.net/REST/v1/Locations/US/CO/80013/Aurora/' + addr.address + '?key=' + bingMapsApiKey + "&jsonp=geoCodeCallback";
+	callRestService(request);
+}
+
+function startLocationGeocodeCallback(result) {
+	startLocation = {
+		address : result.resourceSets[0].resources[0].address.addressLine,
+		lat : result.resourceSets[0].resources[0].point.coordinates[0],
+		lon : result.resourceSets[0].resources[0].point.coordinates[1],
+		distance : 0
+	};
+}
+
+function geoCodeCallback(result) {
+	var location = {
+		address : result.resourceSets[0].resources[0].address.addressLine,
+		lat : result.resourceSets[0].resources[0].point.coordinates[0],
+		lon : result.resourceSets[0].resources[0].point.coordinates[1],
+		distance : Infinity
+	};
+	geocodedLocations.push(location);			
+	if (addresses.length === geocodedLocations.length) {
+		applyDistances(geocodedLocations);
+	}
+}
+      </script>
+   </head>
+   <!--<body onload="GetMap();">-->
+   <body>
+<div id="message"></div>
+   <div id="tabs"></div>
+	<p>
+	  <label for='numberOfRoutesInput'>How many routes?</label>
+	  </p>
+	  <p>
+	  <input type="text" id="numberOfRoutesInput" value="1"/>
+	  </p>
+	  <p>
+	  <label for='addressesInput'>
+	  Paste addresses here, one per line:
+	  </label>
+	  </p>
+	  <p>
+	  <textarea id="addressesInput" rows="20" cols="20">
+4254 S Biscay Cir
+18351 E Hampden Pl
+16983 E Ithaca Cir
+16968 E Kent Dr
+19291 E Quincy Ave
+17806 E Loyola Dr
+	  </textarea>
+	  </p>
+	  <p>
+	  <input type="button" value="Do it" onclick="planRoutes()" />
+	  </p>
+   </body>
+</html>
