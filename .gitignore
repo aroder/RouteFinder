@@ -1,0 +1,8 @@
+RouteFinder.Web/bin
+RouteFinder.Web/obj
+RouteFinder.Web.Tests/bin
+RouteFinder.Web.Tests/obj
+*.user
+*.suo
+_ReSharper.*
+*.sln.cache
