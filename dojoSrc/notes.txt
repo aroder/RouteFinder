@@ -1,0 +1,5 @@
+// must be run at top level
+
+git submodule add https://github.com/dojo/dojo.js
+git submodule add https://github.com/dojo/dijit.git
+mv dijit dojoSrc/js/dojo
