@@ -13,7 +13,9 @@ dojo.require('dojo.io.script');
 // to support the animation chaining of the flash method
 dojo.require('dojo.fx'); 
 
-		dojo.registerModulePath('routeFinder', '../../routeFinder');
+dojo.require('dijit.form.TextBox');
+
+//		dojo.registerModulePath('routeFinder', '../../routeFinder');
 
 
 dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
@@ -32,6 +34,8 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
 	//		lon: 'unknown'
 	//	},
 	
+	widgetsInTemplate: true,
+	
 	constructor: function(args) {
 		this.title = args.title || 'Title';
 		this.bingMapsApiKey = args.bingMapsApiKey || 'AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv';
@@ -46,7 +50,7 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
 	},
 	
 	attributeMap: {
-		title: { node: 'titleNode', type: 'innerHTML' },
+		//title: { node: 'titleNode', type: 'innerHTML' },
 		addressLine: { node: 'addressLineNode',	type: 'innerHTML' },
 		city: { node: 'cityNode', type: 'innerHTML' },
 		state: {node: 'stateNode', type: 'innerHTML' },
@@ -104,14 +108,19 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
 		dojo.io.script.get(jsonpArgs);		
 	},
 	
+	changeTitle: function() {
+	alert('called');
+		console.log(arguments);
+	},
+	
 	markAsLocated: function(response) {
 		var address = response.resourceSets[0].resources[0].address;
 		this.set('addressLine', address.addressLine);
 		this.set('city', address.locality);
 		this.set('state', address.adminDistrict);
 		this.set('zip', address.postalCode);
-		
-		dojo.style(this.titleNode, 'backgroundColor', '#0a0');
+				
+		dojo.style(this.domNode, 'backgroundColor', '#0a0');
 	},
 	
 	markAsNotLocated: function(response) {
@@ -119,6 +128,8 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
 	},
 	
 	flash: function(/*Number*/ timesToFlash) {
+	
+	
 	
 		// becuase this function is recursive, a zero passed in is significant.  It means we should not animate again
 		if (0 === timesToFlash) {
@@ -144,4 +155,7 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
 		
 		animation.play();
 	}
-});
+
+	
+	
+	});
