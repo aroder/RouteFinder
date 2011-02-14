@@ -1,13 +1,13 @@
 ﻿<html>
   <head>
     <title>RouteFinder, dojo implementation</title>
-    <script src='js/dojo/dojo/dojo.js'></script>
+	<link rel="stylesheet" href="styles/main.css" />
+    <script src='js/dojo/dojo/dojo.js' djConfig=" parseOnLoad: true "></script>
     <script> 
 		// register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
 		dojo.registerModulePath('routeFinder', '../../routeFinder');
-		dojo.require('routeFinder.Location');
-		dojo.require('dojo.fx');
-			var animation;
+		dojo.require('routeFinder.layer');
+		
 		dojo.addOnLoad(function() {
 			dojo.connect(dojo.byId('b'), 'onclick', function() {
 				new routeFinder.LocationWidget({
@@ -17,10 +17,26 @@
 					zip: '80111'
 				}).placeAt(dojo.doc.body, 'last');
 			});
+			
+			dojo.connect(dojo.byId('addressInput'), 'onkeyup', function(evt, two) {
+				if (evt.keyCode === dojo.keys.ENTER) {
+					lines = dojo.byId('addressInput').value.split(/\r\n|\r|\n/);
+					dojo.forEach(lines, function(singleLine) {
+						if (0 !== singleLine.length) {
+							
+						}
+					});
+				}
+			});
+			
+			dojo.byId('addressInput').focus();
 		});
     </script>
   </head>
   <body>
+  <div>
+	<textarea id="addressInput"></textarea>
+  </div>
   <input id='b' type="button" value="lookup address" />
   </body>
 </html>

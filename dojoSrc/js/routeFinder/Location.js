@@ -1,15 +1,18 @@
 dojo.provide('routeFinder.Location');
 
+// for the widget declaration
 dojo.require('dijit._Widget');
 dojo.require('dijit._Templated');
-dojo.require('dojo.string');
-dojo.require('dojo.io.script');
-dojo.require('dojo.fx'); // to support the animation chaining of the flash method
-//dojo.require('dojo.cache');
 
-function bla(data) {
-	//console.log(data);
-}
+// for the string substitution
+dojo.require('dojo.string');
+
+// for the jsonp calls
+dojo.require('dojo.io.script');
+
+// to support the animation chaining of the flash method
+dojo.require('dojo.fx'); 
+
 
 dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
 	address: 'unknown',
