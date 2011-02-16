@@ -5,21 +5,63 @@
     <script src='js/dojo/dojo/dojo.js' djConfig="parseOnLoad: true ">
     </script>
     <script>
+      var startingNode;
+      
+      function getNextOrderedLocation(locationsArray){
+        var minDistanceLocation = locationsArray[0];
+        dojo.forEach(locationsArray, function(location){
+          console.log('comparing ' + minDistanceLocation.distance + ' to ' + location.distance);
+          minDistanceLocation = minDistanceLocation.distance < location ? minDistanceLocation : location;
+        });
+        
+        // if this is true, there is no path to the next point
+        if (minDistanceLocation.distance === Infinity) {
+          alert('could not find a path between ' + minDistanceLocation.address + ' and the remaining ' + locationsArray.length + ' points.');
+        }
+        
+        return minDistanceLocation;
+      }
+      
       // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
       dojo.registerModulePath('routeFinder', '../../routeFinder');
       dojo.require('routeFinder.layer');
       
-      dojo.addOnLoad(function(){
       
+      
+      dojo.addOnLoad(function(){
+        dojo.connect(startLocationHolderWidget, 'onDrop', function(source, nodes){
+          startingNode = dijit.getEnclosingWidget(nodes[0]);
+        });
+        
         dojo.connect(dojo.byId('getRouteButton'), 'click', function(evt){
-          // do route algorithm
-          var coordinatesArray = dijit.registry.byClass('routeFinder.LocationWidget').map(function(widget){
-            return {
-              widgetId: widget.widgetId,
-              lat: widget.lat,
-              lon: widget.lon
-            }
+
+          if (!startingNode) {
+            console.error('no starting node');
+            return;
+          }
+          
+          var locations = dijit.registry.byClass('routeFinder.LocationWidget').map(function(widget){
+            return widget;
           });
+		  startingNode.distance = 0;
+		  locations.splice(locations.indexOf(locations), 1);
+		  locations.unshift(startingNode);
+                    
+          var orderedLocations = [];
+          var counter = locations.length;
+          for (var i = 0; i < counter; i++) {
+            var nextLocation = getNextOrderedLocation(locations);
+            locations.splice(locations.indexOf(nextLocation), 1);
+            orderedLocations.push(nextLocation);
+          }
+          
+          var list = dojo.create('ol', null);
+          dojo.forEach(orderedLocations, function(location){
+            dojo.place(dojo.create('li', {
+              innerHTML: location.lat
+            }), list, 'last');
+          })
+          dojo.place('optimizedRouteHolder', list);
           
           //var route = new routeFinder.routing.Route({ startLocation})
         
@@ -52,11 +94,11 @@
     <input id='b' type="button" value="drop a hardcoded address" />
     <div>
       <input id="getRouteButton" type="button" value="Get Route" />
-      <div id="startLocationHolder" dojotype="dojo.dnd.Source" class="container">
+      <div id="startLocationHolder" dojotype="dojo.dnd.Target" class="container" jsid="startLocationHolderWidget">
       </div>
-      <div id="locationHolder" dojotype="dojo.dnd.Source" class="container" jsid="locationHolderWidget" autosync="true" singular="true">
-        <div dojoType="routeFinder.LocationWidget">
-        </div>
+      <div id="locationHolder" dojotype="dojo.dnd.Source" class="container" autosync="true" singular="true">
+      </div>
+      <div id="optimizedRouteHolder">
       </div>
     </div>
   </body>

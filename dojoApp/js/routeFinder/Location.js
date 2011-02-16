@@ -28,6 +28,7 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
   country: 'US', // country code
   lat: 'unknown',
   lon: 'unknown',
+  distance: Infinity,
   
   // TODO: investigate how dojo and the attributeMap, getters, setters,
   // etc might be able to handle nested items
