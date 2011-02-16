@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>dojo drag and drop demo</title>
+    <script src='js/dojo/dojo/dojo.js' djConfig="parseOnLoad: true "></script>
+  
+  <style type='text/css'>
+    .container {
+    width: 200px;
+    height: 200px;
+    outline: 1px dashed gray;
+}
+
+  </style>
+
+  
+  <script type='text/javascript'>
+  dojo.require('dojo.dnd.Source');
+
+  </script>
+  
+</head>
+<body>
+  <h3>List</h3>
+<div dojotype="dojo.dnd.Source" class="container">
+    <div class="dojoDndItem">One</div>
+    <div class="dojoDndItem">Two</div>
+</div>
+
+<h3>Cart</h3>
+<div dojotype="dojo.dnd.Source" id="cartNode" class="container">
+</div>
+
+  
+</body>
+
+
+</html>
+

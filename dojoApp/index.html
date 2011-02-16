@@ -1,0 +1,63 @@
+﻿<html>
+  <head>
+    <title>RouteFinder, dojo implementation</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src='js/dojo/dojo/dojo.js' djConfig="parseOnLoad: true ">
+    </script>
+    <script>
+      // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
+      dojo.registerModulePath('routeFinder', '../../routeFinder');
+      dojo.require('routeFinder.layer');
+      
+      dojo.addOnLoad(function(){
+      
+        dojo.connect(dojo.byId('getRouteButton'), 'click', function(evt){
+          // do route algorithm
+          var coordinatesArray = dijit.registry.byClass('routeFinder.LocationWidget').map(function(widget){
+            return {
+              widgetId: widget.widgetId,
+              lat: widget.lat,
+              lon: widget.lon
+            }
+          });
+          
+          //var route = new routeFinder.routing.Route({ startLocation})
+        
+          // create map and place on the page
+          //var route = new routeFinder.routing.Map()
+        });
+        
+        dojo.byId('addressInput').focus();
+        
+        dojo.connect(dojo.byId('b'), 'onclick', function(){
+          dojo.publish(routeFinder.topics.onAddressAdded, ['17129 E Kent Dr, Aurora, CO, 80013']);
+        });
+      });
+    </script>
+    <style type='text/css'>
+      .container {
+          width: 200px;
+          height: 200px;
+          outline: 1px dashed gray;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <textarea id="addressInput">
+      </textarea>
+    </div>
+    <input id="addAddressButton" type="button" value="Add" />
+    <br/>
+    <input id='b' type="button" value="drop a hardcoded address" />
+    <div>
+      <input id="getRouteButton" type="button" value="Get Route" />
+      <div id="startLocationHolder" dojotype="dojo.dnd.Source" class="container">
+      </div>
+      <div id="locationHolder" dojotype="dojo.dnd.Source" class="container" jsid="locationHolderWidget" autosync="true" singular="true">
+        <div dojoType="routeFinder.LocationWidget">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

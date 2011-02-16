@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <title>RouteFinder, dojo implementation</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src='js/dojo/dojo/dojo.js' djConfig="parseOnLoad: true ">
+    </script>
+    <script>
+      // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
+      dojo.registerModulePath('routeFinder', '../../routeFinder');
+      dojo.require('routeFinder.layer');
+      
+      dojo.addOnLoad(function(){
+      
+        dojo.connect(dojo.byId('getRouteButton'), 'click', function(evt){
+          // do route algorithm
+          var coordinatesArray = dijit.registry.byClass('routeFinder.LocationWidget').map(function(widget){
+            return {
+              widgetId: widget.widgetId,
+              lat: widget.lat,
+              lon: widget.lon
+            }
+          });
+          
+          //var route = new routeFinder.routing.Route({ startLocation})
+        
+          // create map and place on the page
+          //var route = new routeFinder.routing.Map()
+        });
+        
+        dojo.byId('addressInput').focus();
+        
+        dojo.connect(dojo.byId('b'), 'onclick', function(){
+          dojo.publish(routeFinder.topics.onAddressAdded, ['17129 E Kent Dr, Aurora, CO, 80013']);
+        });
+        dojo.connect(dojo.byId('showCount'), 'onclick', function(){
+          dijit.registry.byClass('routeFinder.LocationWidget').forEach(function(widget, index, hash){
+          
+          });
+        });
+		
+		dojo.parser.parse();
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <textarea id="addressInput">
+      </textarea>
+    </div>
+    <input id="showCount" type="button" value="show count" /><input id="addAddressButton" type="button" value="Add" />
+    <br/>
+    <input id='b' type="button" value="drop a hardcoded address" />
+    <div>
+      <input id="getRouteButton" type="button" value="Get Route" />
+      <fieldset>
+        <legend>
+          Drag Start Location Here
+        </legend>
+        <div id="startLocationHolder" dojoType="dojo.dnd.Source" style="width: 200px; height: 200px; outline: 1px dashed black;">
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>
+          Locations
+        </legend>
+        <div id="locationHolder" dojoType="dojo.dnd.Source">
+        </div>
+      </fieldset>
+    </div>
+  </body>
+</html>

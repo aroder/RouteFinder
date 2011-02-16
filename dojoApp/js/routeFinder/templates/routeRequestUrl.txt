@@ -1,0 +1,1 @@
+http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1=39.658967,-104.791203&waypoint.2=39.638612,-104.792233&wayPoint.3=39.638612,-104.763737&optimize=distance&routePathOutput=Points&distanceUnit=mi&key=AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv
