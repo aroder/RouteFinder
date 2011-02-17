@@ -45,7 +45,9 @@ dojo.declare('routeFinder.LocationWidget', [dijit._Widget, dijit._Templated], {
     
   },
   
-  templatePath: dojo.moduleUrl('routeFinder', 'templates/location.html'),
+//  templatePath: dojo.moduleUrl('routeFinder', 'templates/location.html'),
+  templateString: dojo.cache('routeFinder', 'templates/location.html'),
+
   postCreate: function(){
     this.lookupLocation();
     //this.flash();

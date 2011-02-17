@@ -1,17 +1,32 @@
-﻿<html>
+﻿<!DOCTYPE HTML>
+<html>
   <head>
     <title>RouteFinder, dojo implementation</title>
     <link rel="stylesheet" href="styles/main.css" />
+    <style>
+      body, html {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+      }
+      
+      #borderContainer {
+          width: 100%;
+          height: 100%
+      }
+    </style>
     <script src='js/dojo/dojo/dojo.js' djConfig="parseOnLoad: true ">
     </script>
     <script>
+/**************
       var startingNode;
-      
       function getNextOrderedLocation(locationsArray){
         var minDistanceLocation = locationsArray[0];
         dojo.forEach(locationsArray, function(location){
           console.log('comparing ' + minDistanceLocation.distance + ' to ' + location.distance);
-          minDistanceLocation = minDistanceLocation.distance < location ? minDistanceLocation : location;
+          minDistanceLocation = minDistanceLocation.distance < location.distance ? minDistanceLocation : location;
         });
         
         // if this is true, there is no path to the next point
@@ -22,49 +37,36 @@
         return minDistanceLocation;
       }
       
+      *****************/
+      
       // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
       dojo.registerModulePath('routeFinder', '../../routeFinder');
       dojo.require('routeFinder.layer');
+      dojo.require('dijit.layout.BorderContainer');
+      dojo.require('dijit.layout.ContentPane');
       
       
       
       dojo.addOnLoad(function(){
+      
         dojo.connect(startLocationHolderWidget, 'onDrop', function(source, nodes){
           startingNode = dijit.getEnclosingWidget(nodes[0]);
         });
         
         dojo.connect(dojo.byId('getRouteButton'), 'click', function(evt){
-
+        
           if (!startingNode) {
             console.error('no starting node');
             return;
           }
-          
-          var locations = dijit.registry.byClass('routeFinder.LocationWidget').map(function(widget){
-            return widget;
+          var route = new routeFinder.routing.Route();
+          route.orderLocations(dijit.registry.byClass('routeFinder.LocationWidget'), startingNode, function(route){
+            console.log('in callback', route);
+
+			
+
           });
-		  startingNode.distance = 0;
-		  locations.splice(locations.indexOf(locations), 1);
-		  locations.unshift(startingNode);
-                    
-          var orderedLocations = [];
-          var counter = locations.length;
-          for (var i = 0; i < counter; i++) {
-            var nextLocation = getNextOrderedLocation(locations);
-            locations.splice(locations.indexOf(nextLocation), 1);
-            orderedLocations.push(nextLocation);
-          }
-          
-          var list = dojo.create('ol', null);
-          dojo.forEach(orderedLocations, function(location){
-            dojo.place(dojo.create('li', {
-              innerHTML: location.lat
-            }), list, 'last');
-          })
-          dojo.place('optimizedRouteHolder', list);
-          
-          //var route = new routeFinder.routing.Route({ startLocation})
-        
+         
           // create map and place on the page
           //var route = new routeFinder.routing.Map()
         });
@@ -84,22 +86,35 @@
       }
     </style>
   </head>
-  <body>
+  <body class="claro">
+    <!--
+    <div dojoType="dijit.layout.BorderContainer" design="sidebar" gutters="true" liveSplitters="true" id="borderContainer">
+    <div dojoType="dijit.layout.ContentPane" region="leading">
+    -->
     <div>
       <textarea id="addressInput">
+        17129 E Kent Dr 80013
+        909 S Broadway 76058
+        7275 S Broadway Littleton, CO
       </textarea>
     </div>
-    <input id="addAddressButton" type="button" value="Add" />
-    <br/>
-    <input id='b' type="button" value="drop a hardcoded address" />
+    <input id="addAddressButton" type="button" value="Add" /><!--
+    </div>
+    <div dojoType="dijit.layout.ContentPane" region="center">
+    --><input id='b' type="button" value="drop a hardcoded address" />
     <div>
       <input id="getRouteButton" type="button" value="Get Route" />
-      <div id="startLocationHolder" dojotype="dojo.dnd.Target" class="container" jsid="startLocationHolderWidget">
+      <div id="startLocationHolder" dojotype="dojo.dnd.Source" class="container" jsid="startLocationHolderWidget">
+        <span id="startLocationPromptMessage">Drag Start Location Here</span>
       </div>
-      <div id="locationHolder" dojotype="dojo.dnd.Source" class="container" autosync="true" singular="true">
+      <div id="locationHolder" dojotype="dojo.dnd.Source" class="container" autosync="true" singular="true" jsid="locationHolderWidget">
       </div>
-      <div id="optimizedRouteHolder">
+      <div id="optimizedRouteHolder" class="container">
       </div>
     </div>
+    <!--
+    </div>
+    </div>
+    -->
   </body>
 </html>

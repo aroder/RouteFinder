@@ -1,3 +1,7 @@
+@import url("../js/dojo/dojo.css");
+@import url("../js/dojo/dijit/dijit.css");
+@import url("../js/dojo/dijit/themes/claro/claro.css");
+
 textarea.expandable {
 	background-color: yellow;
 	clear: both;
@@ -9,3 +13,4 @@ textarea.expandable {
 	margin: 6px auto;
 	border: 1px solid #889;
 }
+

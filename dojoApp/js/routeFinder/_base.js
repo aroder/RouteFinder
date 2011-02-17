@@ -9,17 +9,25 @@ dojo.require('dijit.form.Button');
 dojo.mixin(routeFinder, {
   init: function(){
     dojo.subscribe(routeFinder.topics.onAddressAdded, function(address){
-      var locationHolder = dojo.byId('locationHolder');
       new routeFinder.LocationWidget({
         //id: 'id_' + address.split(' ')[0],
         unformattedAddress: address,
         title: address
-      }).placeAt(locationHolder, 'last');
- 
- 		// sync so the dnd will work
-      //locationHolderWidget.sync();
-      
+      }).placeAt('locationHolder', 'last');
     });
+    
+    // create some drag and drop behavior
+    startLocationHolderWidget.checkAcceptance = dojo.hitch(startLocationHolderWidget, function(source, nodes){
+      var nodeCount = this.getAllNodes().length;
+      return 0 === nodeCount;
+    });
+    dojo.connect(startLocationHolderWidget, 'onDndDrop', function(source, nodes, copy, target){
+      routeFinder._togglePrompt(startLocationHolderWidget);
+    });
+    dojo.connect(locationHolderWidget, 'onDndDrop', function(){
+      routeFinder._togglePrompt(startLocationHolderWidget);
+    });
+    
     
     var addressesNode = dojo.byId('addressInput');
     
@@ -32,8 +40,18 @@ dojo.mixin(routeFinder, {
     dojo.connect(dojo.byId('addAddressButton'), 'click', function(evt){
       routeFinder.locate(addressesNode);
     });
+  },
+  
+  _togglePrompt: function(source){
+    if (0 === source.getAllNodes().length) {
+      dojo.style('startLocationPromptMessage', 'display', 'inline');
+    }
+    else {
+      dojo.style('startLocationPromptMessage', 'display', 'none');
+    }
     
   },
+  
   locate: function locateAddresses(textAreaNode){
     lines = textAreaNode.value.split(/\r\n|\r|\n/);
     dojo.forEach(lines, function(singleLine){
