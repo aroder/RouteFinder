@@ -23,7 +23,7 @@
             console.error('no starting node');
             return;
           }
-          var router = new routeFinder.routing.Route();
+          var router = new routeFinder.routing.Router();
           router.orderLocations(dijit.registry.byClass('routeFinder.LocationWidget'), startingNode, function(route){
             //console.log('in callback', route);
             
@@ -42,9 +42,14 @@
 			
             //markersValue = markersValue.substring(0, markersValue.length - 1);
             
-            dojo.create('img', {
-              src: 'http://maps.google.com/maps/api/staticmap?center=39.64,-104.78&zoom=14&size=512x512&maptype=roadmap&sensor=false&path=color:0xff0000ff|weight:5' + pathsValue + markersValue
-            }, 'map');
+            //dojo.create('img', {
+            //  src: 'http://maps.google.com/maps/api/staticmap?center=39.64,-104.78&zoom=14&size=512x512&maptype=roadmap&sensor=false&path=color:0xff0000ff|weight:5' + pathsValue + markersValue
+            //}, 'map');
+			var map = new routeFinder.routing.Map({
+				route : route
+			})
+			map.startup();
+			map.placeAt('mapContainer');
             
           });
         });
@@ -85,8 +90,7 @@
         <!--        <div dojoType="routeFinder.LocationWidget" unformattedAddress="1770 Carlin St Reno NV" class="dojoDndItem">
         </div>-->
       </div>
-      <div id='map'>&thinsp;
-      </div>
+	  <div id="mapContainer"></div>
     </div>
   </body>
 </html>
