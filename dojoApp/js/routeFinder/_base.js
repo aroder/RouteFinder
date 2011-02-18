@@ -12,7 +12,8 @@ dojo.mixin(routeFinder, {
       new routeFinder.LocationWidget({
         //id: 'id_' + address.split(' ')[0],
         unformattedAddress: address,
-        title: address
+        title: address,
+		class: 'dojoDndItem'
       }).placeAt('locationHolder', 'last');
     });
     
