@@ -1,100 +1,4 @@
-dojo.provide('routeFinder._base');
-
-dojo.require('routeFinder.topics');
-dojo.require('dojo.parser');
-dojo.require('dijit.InlineEditBox');
-dojo.require('dijit.form.Button');
-
-
-// for the widget declaration
-dojo.require('dijit._Widget');
-dojo.require('dijit._Templated');
-
-// for the string substitution
-dojo.require('dojo.string');
-
-// for the jsonp calls
-dojo.require('dojo.io.script');
-
-// to support the animation chaining of the flash method
-dojo.require('dojo.fx');
-
-dojo.require('dijit.form.TextBox');
-
-
-dojo.mixin(routeFinder, {
-  init: function(){
-  
-    dojo.subscribe(routeFinder.topics.onAddressAdded, function(address){
-      var widget = new routeFinder.widgets.LocationWidget({
-        unformattedAddress: address,
-        title: address
-      });
-      
-      // make the widget draggable
-      dojo.addClass(widget.domNode, 'dojoDndItem');
-      
-      widget.placeAt('locationHolder', 'last');
-    });
-    
-    
-    // create some drag and drop behavior
-    
-    if (typeof(startLocationHolderWidget) != 'undefined') {
-      startLocationHolderWidget.checkAcceptance = dojo.hitch(startLocationHolderWidget, function(source, nodes){
-        var nodeCount = this.getAllNodes().length;
-        return 0 === nodeCount;
-      });
-      
-      dojo.connect(startLocationHolderWidget, 'onDndDrop', function(source, nodes, copy, target){
-        routeFinder._togglePrompt(startLocationHolderWidget);
-      });
-      dojo.connect(locationHolderWidget, 'onDndDrop', function(){
-        routeFinder._togglePrompt(startLocationHolderWidget);
-      });
-      
-      
-      var addressesNode = dojo.byId('addressInput');
-      
-      dojo.connect(dojo.byId('addressInput'), 'onkeyup', function(evt){
-        if (evt.keyCode === dojo.keys.ENTER) {
-          routeFinder.locate(addressesNode);
-        }
-      });
-      
-      dojo.connect(dojo.byId('addAddressButton'), 'click', function(evt){
-        routeFinder.locate(addressesNode);
-      });
-    }
-  },
-  
-  _togglePrompt: function(source){
-    if (0 === source.getAllNodes().length) {
-      dojo.style('startLocationPromptMessage', 'display', 'inline');
-    }
-    else {
-      dojo.style('startLocationPromptMessage', 'display', 'none');
-    }
-    
-  },
-  
-  locate: function locateAddresses(textAreaNode){
-    lines = textAreaNode.value.split(/\r\n|\r|\n/);
-    dojo.forEach(lines, function(singleLine){
-      if (0 !== singleLine.length) {
-        dojo.publish(routeFinder.topics.onAddressAdded, [singleLine]);
-      }
-    });
-    textAreaNode.value = '';
-    textAreaNode.focus();
-  }
-  
-});
-
-dojo.addOnLoad(routeFinder, 'init');
-
-
-
+dojo.provide('routeFinder.routing');
 
 
 dojo.declare('routeFinder.Router', null, {
@@ -188,6 +92,5 @@ dojo.declare('routeFinder.Router', null, {
     // reset the locations' distances:
   }
 });
-
 
 

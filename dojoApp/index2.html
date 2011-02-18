@@ -1,0 +1,26 @@
+﻿<html>
+  <head>
+    <title>RouteFinder, dojo implementation</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src='js/dojo/dojo/dojo.js'>
+    </script>
+    <script>
+      dojo.registerModulePath('routeFinder', '../../routeFinder');
+      dojo.require('routeFinder.layer');
+      
+      dojo.ready(function(){
+        routeFinder.mapping.dependencyLoadOp.then(function(){
+        var map = new routeFinder.Map();
+		map.placeAt('mapContainer');
+		map.startup();
+		
+        });
+      });
+    </script>
+  </head>
+  <body class="claro">
+    </div>
+    <div id='mapContainer'>
+    </div>
+  </body>
+</html>
