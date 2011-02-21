@@ -16,7 +16,6 @@ dojo.require('dojo.fx');
 dojo.require('dijit.form.TextBox');
 
 dojo.require('dojo.DeferredList'); // used by Router to aggregate all the responses
-
 //		dojo.registerModulePath('routeFinder', '../../routeFinder');
 
 
@@ -47,9 +46,9 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
     
   },
   
-//  templatePath: dojo.moduleUrl('routeFinder', 'templates/location.html'),
+  //  templatePath: dojo.moduleUrl('routeFinder', 'templates/location.html'),
   templateString: dojo.cache('routeFinder', 'templates/location.html'),
-
+  
   postCreate: function(){
     this.lookupLocation();
     //this.flash();
@@ -138,10 +137,10 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
     this.set('state', address.adminDistrict);
     this.set('zip', address.postalCode);
     
-	var point = response.resourceSets[0].resources[0].point;
-	this.set('lat', point.coordinates[0]);
-	this.set('lon', point.coordinates[1]);
-
+    var point = response.resourceSets[0].resources[0].point;
+    this.set('lat', point.coordinates[0]);
+    this.set('lon', point.coordinates[1]);
+    
     dojo.style(this.domNode, 'backgroundColor', '#0a0');
   },
   
@@ -205,7 +204,7 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
 dojo.declare('routeFinder.Router', null, {
   startLocation: undefined,
   
-  constructor: function(/*Object*/args){
+  constructor: function(args){
     dojo.safeMixin(this, args);
   },
   
@@ -256,13 +255,9 @@ dojo.declare('routeFinder.Router', null, {
         this._orderLocationsInternal(remainingLocations, orderedLocations, originalCallback);
       }
       else {
-        originalCallback({
-          orderedLocations: orderedLocations
-        });
+        originalCallback(orderedLocations);
       }
-      
     }));
-    
   },
   
   orderLocations: function(/*Array*/locations, /*Object*/ startLocation, /*Function*/ callback){
@@ -276,21 +271,31 @@ dojo.declare('routeFinder.Router', null, {
     var orderedLocations = [startingNode];
     
     this._orderLocationsInternal(locations, orderedLocations, callback);
+  },
+  
+  /**
+   *
+   * @param {Array} route - an array of Location widgets called orderedLocations
+   * @param {Object} numberOfRoutes - the number of routes route should be split into
+   * @param {Object} startLocation - optional.  If not included, the first location is stripped out and used as the start location for all routes
+   * @return {Array} an array of route arrays
+   */
+  splitRoute: function(route, numberOfRoutes, startLocation){
+	if ('undefined' == typeof(startLocation)) {
+		startLocation = route.splice(0, 1);
+	}
     
-    
-    // for each location, get the distance between last element of orderedLocations.
-    // When all the calls have returned, then call getNextOrderedLocation
-    // push the return onto orderedLocations, repeat
-  
-    // once the locations array is empty, reorder the locations, and call the service to get the map,
-  
-    // var counter = locations.length;
-    // for (var i = 0; i < counter; i++) {
-    //   var nextLocation = getNextOrderedLocation(locations);
-    //   locations.splice(locations.indexOf(nextLocation), 1);
-    //   orderedLocations.push(nextLocation);
-  
-    // reset the locations' distances:
+    var routesAfterSplitting = [];
+    var routeSize = Math.floor(route.length / numberOfRoutes);
+    for (var i = 0; i < numberOfRoutes; i++) {
+		routesAfterSplitting.push(route.splice(0, routeSize));
+		
+		// on the last iteration, add any remaining Locations
+		if (numberOfRoutes == i + 1 && 0 < route.length) {
+			routesAfterSplitting[i] = routesAfterSplitting[i].concat(route);
+		}
+    }
+	return routesAfterSplitting;
   }
 });
 

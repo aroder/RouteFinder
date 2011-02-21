@@ -1,15 +1,18 @@
-﻿<!DOCTYPE HTML>
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
+  <!--<!DOCTYPE HTML>-->
   <head>
     <title>RouteFinder, dojo implementation</title>
     <link rel="stylesheet" href="styles/main.css" />
-    <script src='js/dojo/dojo/dojo.js' djConfig="parseOnLoad: true ">
+    <script src="js/dojo/dojo/dojo.js" djConfig="parseOnLoad: true, isDebug: true, debugAtAllCosts: true">
     </script>
     <script>
       
       // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
       dojo.registerModulePath('routeFinder', '../../routeFinder');
       dojo.require('routeFinder.layer');
+      dojo.require('dijit.layout.TabContainer');
+      dojo.require('dijit.layout.ContentPane');
       
       dojo.addOnLoad(function(){
       
@@ -23,35 +26,32 @@
             console.error('no starting node');
             return;
           }
-          var router = new routeFinder.Router();
+          
+          var numberOfRoutes = dojo.byId('numberOfRoutes').value;
+          var router = new routeFinder.Router({
+            numberOfRoutes: numberOfRoutes
+          });
           router.orderLocations(dijit.registry.byClass('routeFinder.Location'), startingNode, function(route){
-            //console.log('in callback', route);
-            
-            // create map and place on the page
-            var unformattedMarker = '&markers=label:${0}|${1},${2}';
-            var markersValue = '';
-			var unformattedPath = '|${0},${1}';
-			var pathsValue = '';
-            
-            dojo.forEach(route.orderedLocations, function(location, index){
-              markersValue += dojo.string.substitute(unformattedMarker, [index + 1, location.lat, location.lon]);
-			  pathsValue += dojo.string.substitute(unformattedPath, [location.lat, location.lon]);
-            });
-			
-			
-			
-            //markersValue = markersValue.substring(0, markersValue.length - 1);
-            
-            //dojo.create('img', {
-            //  src: 'http://maps.google.com/maps/api/staticmap?center=39.64,-104.78&zoom=14&size=512x512&maptype=roadmap&sensor=false&path=color:0xff0000ff|weight:5' + pathsValue + markersValue
-            //}, 'map');
-			console.log(route);
-			var map = new routeFinder.Map({
-				route : route
-			});
-			map.placeAt('mapContainer');
-			map.startup();
-            
+            var routeArray = router.splitRoute(route, dojo.byId('numberOfRoutes').value);
+            var tabContainer = new dijit.layout.TabContainer();
+            for (var i = 0; i < routeArray.length; i++) {
+			  
+			  tabContainer.addChild(new dijit.layout.ContentPane({			  	
+                title: 'Route ' + (i + 1),
+                content: '<div id="' + this.id + '_routeContainer">map here</div>',
+                onLoad: function(evt){
+                  console.log('content pane loaded: ', arguments);
+                  console.log('continued: ' + this.id);
+                  
+                  var map = new routeFinder.Map(route);
+                  map.placeAt(this.id + '_routeContainer');
+                  map.startup();
+                  
+                }
+              }));
+            }
+            tabContainer.placeAt('routeTabs');
+            tabContainer.startup();
           });
         });
         
@@ -62,7 +62,7 @@
         });
         
         
-		// throw some default addresses on there
+        // throw some default addresses on there
         dojo.attr('addressInput', 'value', '4254 S Biscay Cir, 80013\r\n18351 E Hampden Pl, 80013\r\n16983 E Ithaca Cir, 80013\r\n16968 E Kent Dr, 80013\r\n19291 E Quincy Ave, 80013\r\n17806 E Loyola Dr, 80013\r\n');
       });
     </script>
@@ -72,16 +72,28 @@
           height: 200px;
           outline: 1px dashed gray;
       }
+      
+      .mapContainer {
+          position: relative;
+          height: 300px;
+          width: 500px;
+      }
     </style>
   </head>
   <body class="claro">
-    <div>
-      <textarea id="addressInput">
-        17129 E Kent Dr 80013
-        909 S Broadway 76058
-        7275 S Broadway Littleton, CO
+    <p>
+      <label for="numberOfRoutes">
+        Number of Routes
+      </label>
+      <input type="text" id="numberOfRoutes" name="numberOfRoutes" value="1">
+    </p>
+    <p>
+      <label for="addressInput">
+        Address(es):
+      </label>
+      <textarea id="addressInput" name="addressInput">
       </textarea>
-    </div>
+    </p>
     <input id="addAddressButton" type="button" value="Add" /><input id='b' type="button" value="drop a hardcoded address" />
     <div>
       <input id="getRouteButton" type="button" value="Get Route" />
@@ -92,7 +104,8 @@
         <!--        <div dojoType="routeFinder.LocationWidget" unformattedAddress="1770 Carlin St Reno NV" class="dojoDndItem">
         </div>-->
       </div>
-	  <div id="mapContainer"></div>
+      <div id="routeTabs">
+      </div>
     </div>
   </body>
 </html>
