@@ -4,7 +4,7 @@ dojo.require('routeFinder.topics');
 dojo.require('dojo.parser');
 dojo.require('dijit.InlineEditBox');
 dojo.require('dijit.form.Button');
-
+dojo.require('dojo.dnd.Source');
 
 // for the widget declaration
 dojo.require('dijit._Widget');
@@ -26,7 +26,7 @@ dojo.mixin(routeFinder, {
   init: function(){
   
     dojo.subscribe(routeFinder.topics.onAddressAdded, function(address){
-      var widget = new routeFinder.widgets.LocationWidget({
+      var widget = new routeFinder.Location({
         unformattedAddress: address,
         title: address
       });
@@ -96,11 +96,11 @@ dojo.addOnLoad(routeFinder, 'init');
 
 
 
-
+/*
 dojo.declare('routeFinder.Router', null, {
   startLocation: undefined,
   
-  constructor: function(/*Object*/args){
+  constructor: function(args){
     dojo.safeMixin(this, args);
   },
   
@@ -160,7 +160,7 @@ dojo.declare('routeFinder.Router', null, {
     
   },
   
-  orderLocations: function(/*Array*/locations, /*Object*/ startLocation, /*Function*/ callback){
+  orderLocations: function(locations,  startLocation,  callback){
     if (locations instanceof dijit.WidgetSet) {
       locations = locations.toArray();
     }
@@ -188,6 +188,7 @@ dojo.declare('routeFinder.Router', null, {
     // reset the locations' distances:
   }
 });
+*/
 
 
 

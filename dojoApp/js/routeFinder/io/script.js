@@ -5,7 +5,6 @@ dojo.provide('routeFinder.io.script');
 
 dojo.require('dojo.io.script');
 
-
 function myBingHandler(object, id){
   routeFinder.io.script.bingDeferreds[id].ioArgs.json = object;
 }

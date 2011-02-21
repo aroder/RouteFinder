@@ -23,8 +23,8 @@
             console.error('no starting node');
             return;
           }
-          var router = new routeFinder.routing.Router();
-          router.orderLocations(dijit.registry.byClass('routeFinder.LocationWidget'), startingNode, function(route){
+          var router = new routeFinder.Router();
+          router.orderLocations(dijit.registry.byClass('routeFinder.Location'), startingNode, function(route){
             //console.log('in callback', route);
             
             // create map and place on the page
@@ -45,11 +45,12 @@
             //dojo.create('img', {
             //  src: 'http://maps.google.com/maps/api/staticmap?center=39.64,-104.78&zoom=14&size=512x512&maptype=roadmap&sensor=false&path=color:0xff0000ff|weight:5' + pathsValue + markersValue
             //}, 'map');
-			var map = new routeFinder.routing.Map({
+			console.log(route);
+			var map = new routeFinder.Map({
 				route : route
-			})
-			map.startup();
+			});
 			map.placeAt('mapContainer');
+			map.startup();
             
           });
         });
@@ -61,6 +62,7 @@
         });
         
         
+		// throw some default addresses on there
         dojo.attr('addressInput', 'value', '4254 S Biscay Cir, 80013\r\n18351 E Hampden Pl, 80013\r\n16983 E Ithaca Cir, 80013\r\n16968 E Kent Dr, 80013\r\n19291 E Quincy Ave, 80013\r\n17806 E Loyola Dr, 80013\r\n');
       });
     </script>
