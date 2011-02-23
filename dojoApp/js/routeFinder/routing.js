@@ -1,23 +1,12 @@
 dojo.provide('routeFinder.routing');
 
-// for the widget declaration
 dojo.require('dijit._Widget');
 dojo.require('dijit._Templated');
-
-// for the string substitution
 dojo.require('dojo.string');
-
-// for the jsonp calls
 dojo.require('dojo.io.script');
-
-// to support the animation chaining of the flash method
 dojo.require('dojo.fx');
-
 dojo.require('dijit.form.TextBox');
-
-dojo.require('dojo.DeferredList'); // used by Router to aggregate all the responses
-//		dojo.registerModulePath('routeFinder', '../../routeFinder');
-
+dojo.require('dojo.DeferredList');
 
 dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
   title: '',
@@ -76,59 +65,55 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
   
   // looks up the address using the Bing MAPS REST API.  
   lookupLocation: function(){
-    // Bing Maps REST API chokes if there is a period (.) in the value of the jsonp query string parameter
-    // this is how jsonp can be done in dojo.  However, the jsonp callback parameter value is something like 
-    // dojo.io.script.jsonp_dojoIoScript1._jsonpCallback, which causes the Bing Maps API service to return an error:
-    // "jsonp: The string value has an invalid format." and an HTTP status code of 400
-    
-    var jsonpCallbackFunctionName = 'dojo_locationLookupJsonpCallback_' + this.id;
-    
-    // a closure to hook the jsonp callback back into this widget
-    (function(dijitId){
-    
-      // dynamically create a uniquely named global function, since the Bing Maps API cannot handle namespacing in the jsonp callback parameter value
-      window[jsonpCallbackFunctionName] = function(response){
-      
-        if (!response.statusDescription === "OK") {
-          alert('Something went wrong calling the Bing Maps API service: ' + response.errorDetails[0]);
+    if (routeFinder.config.useLiveLocationService) {
+      var jsonpArgs = {
+        url: this.locationRequestByQueryTemplate,
+        handleAs: 'json',
+        callbackParamName: 'jsonp',
+        content: {
+          query: this.unformattedAddress,
+          key: this.bingMapsApiKey
+        },
+        load: dojo.hitch(this, function(response){
+          if (!response.statusDescription === "OK") {
+            alert('Something went wrong calling the Bing Maps API service: ' + response.errorDetails[0]);
+          }
+          if (0 === response.resourceSets.length ||
+          'undefined' === typeof(response.resourceSets[0].resources[0]) ||
+          'undefined' === typeof(response.resourceSets[0].resources[0].address)) {
+            this.markAsNotLocated(response);
+          }
+          else {
+            this.markAsLocated(response);
+          }
+        }),
+        error: function(error){
+          console.error(error);
         }
-        
-        // the current closure provides access to the wiget's id
-        var widget = dijit.byId(dijitId);
-        
-        // basically, pass execution control back into the widget itself.  
-        // these could potentially be an event through the dojo pub/sub apis
-        if (0 === response.resourceSets.length ||
-        'undefined' === typeof(response.resourceSets[0].resources[0]) ||
-        'undefined' === typeof(response.resourceSets[0].resources[0].address)) {
-          widget.markAsNotLocated(response);
-        }
-        
-        widget.markAsLocated(response);
-      }
-    })(this.id);
-    var jsonpArgs = {
-      //url: dojo.string.substitute(this.locationRequestTemplate, this),
-      url: this.locationRequestByQueryTemplate,
-      handleAs: 'javascript',
-      //callbackParamName: 'jsonp',  // if the Bing Maps API didn't barf on namespaces in the jsonp callback value, dojo would use this function to call the load operation
-      content: {
-        query: this.unformattedAddress,
-        key: this.bingMapsApiKey,
-        jsonp: jsonpCallbackFunctionName
-      },
-      // load: function(data) { this.markAsLocated(); },    // if the Bing Maps API didn't barf on namespaces, this would be called automagically
-      error: function(error){
-        console.error(error);
-      }
-    };
-    dojo.io.script.get(jsonpArgs);
+      };
+      dojo.io.script.get(jsonpArgs);
+    }
+    else {
+      var fakeResponse = {
+        resourceSets: [{
+          resources: [{
+            address: {
+              addressLine: '123 Fake St',
+              locality: 'Faketown',
+              adminDistrict: 'FL',
+              postalCode: '77777'
+            },
+            point: {
+              // return a somewhat random set of coordinates
+              coordinates: [30.0000 + Math.floor(Math.random() * 11), -108.0000 + Math.floor(Math.random() * 11)]
+            }
+          }]
+        }]
+      };
+      this.markAsLocated(fakeResponse);
+    }
   },
   
-  changeTitle: function(){
-    alert('called');
-    console.log(arguments);
-  },
   
   markAsLocated: function(response){
     var address = response.resourceSets[0].resources[0].address;
@@ -141,65 +126,14 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
     this.set('lat', point.coordinates[0]);
     this.set('lon', point.coordinates[1]);
     
-    dojo.style(this.domNode, 'backgroundColor', '#0a0');
+	//TODO: do entrance animation
+    //dojo.style(this.domNode, 'backgroundColor', '#0a0');
   },
   
   markAsNotLocated: function(response){
     console.log('could not find address');
   },
-  
-  flash: function(/*Number*/timesToFlash){
-  
-  
-  
-    // becuase this function is recursive, a zero passed in is significant.  It means we should not animate again
-    if (0 === timesToFlash) {
-      return;
-    }
-    
-    // if not zero, but undefined, set the default to 3
-    timesToFlash = timesToFlash || 3;
-    
-    // save the starting color so we can refer back to it after the flash
-    var startingColor = dojo.style(this.addressLineNode, 'backgroundColor');
-    
-    // the basic animation is flashing to a color, then reverting back to the startingColor
-    var animation = dojo.fx.chain([dojo.animateProperty({
-      node: this.addressLineNode,
-      duration: 100,
-      properties: {
-        backgroundColor: '#FFE600'
-      }
-    }), dojo.animateProperty({
-      node: this.addressLineNode,
-      duration: 100,
-      properties: {
-        backgroundColor: startingColor
-      }
-    })])
-    
-    // after the animation is over, we check to see if we decrement the number of times to flash and call this function again
-    var handle = dojo.connect(animation, 'onEnd', dojo.hitch(this, function(){
-      this.flash(timesToFlash - 1);
-    }));
-    
-    animation.play();
-  }
-  
-  
-  
-});
-
-
-
-
-
-
-
-
-
-
-
+  });
 
 dojo.declare('routeFinder.Router', null, {
   startLocation: undefined,
@@ -265,6 +199,11 @@ dojo.declare('routeFinder.Router', null, {
       locations = locations.toArray();
     }
     
+    if (!routeFinder.config.useLiveRoutingService) {
+      callback(locations);
+	  return;
+    }
+    
     startLocation.distance = 0;
     locations.splice(locations.indexOf(startingNode), 1);
     
@@ -281,21 +220,21 @@ dojo.declare('routeFinder.Router', null, {
    * @return {Array} an array of route arrays
    */
   splitRoute: function(route, numberOfRoutes, startLocation){
-	if ('undefined' == typeof(startLocation)) {
-		startLocation = route.splice(0, 1);
-	}
+    if ('undefined' == typeof(startLocation)) {
+      startLocation = route.splice(0, 1);
+    }
     
     var routesAfterSplitting = [];
     var routeSize = Math.floor(route.length / numberOfRoutes);
     for (var i = 0; i < numberOfRoutes; i++) {
-		routesAfterSplitting.push(route.splice(0, routeSize));
-		
-		// on the last iteration, add any remaining Locations
-		if (numberOfRoutes == i + 1 && 0 < route.length) {
-			routesAfterSplitting[i] = routesAfterSplitting[i].concat(route);
-		}
+      routesAfterSplitting.push(route.splice(0, routeSize));
+      
+      // on the last iteration, add any remaining Locations
+      if (numberOfRoutes == i + 1 && 0 < route.length) {
+        routesAfterSplitting[i] = routesAfterSplitting[i].concat(route);
+      }
     }
-	return routesAfterSplitting;
+    return routesAfterSplitting;
   }
 });
 
