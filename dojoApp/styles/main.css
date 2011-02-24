@@ -202,6 +202,21 @@ a.button:active {
 	border: 5px solid #35DB43;
 }
 
+.location {
+	position: relative;
+}
+.closeButton {
+	position: absolute;
+	top: 5px;
+	right: 0;
+	width: 30px;
+	height: 30px;
+	background: transparent url('../img/closeIcon.png') 0px 0px no-repeat;
+	cursor: pointer;
+	z-index: 1103;
+	display: inline;
+}
+
 .hidden {
 	display: none;
 }

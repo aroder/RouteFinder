@@ -38,7 +38,7 @@ dojo.mixin(routeFinder, {
       
       // make the widget draggable
       dojo.addClass(widget.domNode, 'dojoDndItem');
-      
+      widget.startup();
       widget.placeAt('locationHolder', 'last');
       
       dojo.removeClass(startLocationHolderWidget.node, 'hidden');
@@ -57,8 +57,7 @@ dojo.mixin(routeFinder, {
       dojo.connect(locationHolderWidget, 'onDndDrop', function(){
         routeFinder._restyleItems(startLocationHolderWidget, locationHolderWidget);
       });
-      
-      
+            
       var addressesNode = dojo.byId('addressInput');
       
       dojo.connect(dojo.byId('addressInput'), 'onkeyup', function(evt){
@@ -112,7 +111,7 @@ dojo.mixin(routeFinder, {
     
     // save the starting color so we can refer back to it after the flash
     var startingColor = dojo.style(node, 'backgroundColor');
-
+    
     // the basic animation is flashing to a color, then reverting back to the startingColor
     var animation = dojo.fx.chain([dojo.animateProperty({
       node: node,
@@ -122,7 +121,7 @@ dojo.mixin(routeFinder, {
       }
     }), dojo.animateProperty({
       node: node,
-      duration: 100,
+      duration: 150,
       properties: {
         backgroundColor: startingColor
       }
@@ -134,9 +133,17 @@ dojo.mixin(routeFinder, {
     }));
     
     animation.play();
+  },
+  isChildOf: function(child, parent){
+    if (child != null) {
+      while (child.parentNode) {
+        if ((child = child.parentNode) == parent) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
-  
-  
 });
 
 dojo.addOnLoad(routeFinder, 'init');

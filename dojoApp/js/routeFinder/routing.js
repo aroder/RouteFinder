@@ -32,7 +32,6 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
     this.bingMapsApiKey = args.bingMapsApiKey || 'AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv';
     this.locationRequestTemplate = dojo.cache('routeFinder', 'templates/locationRequestUrl.txt');
     this.locationRequestByQueryTemplate = dojo.cache('routeFinder', 'templates/locationRequestByQueryUrl.txt');
-    
   },
   
   //  templatePath: dojo.moduleUrl('routeFinder', 'templates/location.html'),
@@ -41,6 +40,29 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
   postCreate: function(){
     this.lookupLocation();
     //this.flash();
+  },
+  
+  startup: function(){
+  	
+    dojo.connect(this.domNode, 'onmouseover', dojo.hitch(this, function(evt){
+      var query = dojo.query('.closeButton', evt.target);
+      if (0 < query.length) {
+        var anchorNode = query[0];
+        dojo.removeClass(anchorNode, 'hidden');
+      }
+    }));
+    dojo.connect(this.domNode, 'onmouseout', dojo.hitch(this, function(evt){
+      if (this.domNode == evt.relatedTarget || routeFinder.isChildOf(evt.relatedTarget, this.domNode)) {
+        return;
+      }
+      var anchorNode = dojo.query('.closeButton', evt.target)[0];
+      dojo.addClass(anchorNode, 'hidden');
+      
+    }));
+	dojo.query('.closeButton', this.domNode).connect('onclick', dojo.hitch(this, function(evt) {
+		this.destroyRecursive();
+	}));
+	
   },
   
   attributeMap: {
@@ -126,14 +148,14 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
     this.set('lat', point.coordinates[0]);
     this.set('lon', point.coordinates[1]);
     
-	//TODO: do entrance animation
+    //TODO: do entrance animation
     //dojo.style(this.domNode, 'backgroundColor', '#0a0');
   },
   
   markAsNotLocated: function(response){
     console.log('could not find address');
   },
-  });
+});
 
 dojo.declare('routeFinder.Router', null, {
   startLocation: undefined,
@@ -201,7 +223,7 @@ dojo.declare('routeFinder.Router', null, {
     
     if (!routeFinder.config.useLiveRoutingService) {
       callback(locations);
-	  return;
+      return;
     }
     
     startLocation.distance = 0;
