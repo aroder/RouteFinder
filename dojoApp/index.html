@@ -1,6 +1,5 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-    <!--<!DOCTYPE HTML>-->
+﻿<!DOCTYPE HTML>
+	<html>
     <head>
         <title>RouteFinder, dojo implementation</title>
         <link rel="stylesheet" href="styles/dojoMain.css" />
@@ -18,9 +17,9 @@
             dojo.addOnLoad(function(){
             
                 routefinder.init({
-                    useLiveMapService: false,
-                    useLiveLocationService: false,
-                    useLiveRoutingService: false
+                    useLiveMapService: true,
+                    useLiveLocationService: true,
+                    useLiveRoutingService: true
                 });
                 
                 dojo.connect(startLocationHolderWidget, 'onDrop', function(source, nodes){
