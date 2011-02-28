@@ -1,6 +1,6 @@
-dojo.provide('routeFinder._base');
+dojo.provide('routefinder._base');
 
-dojo.require('routeFinder.topics');
+dojo.require('routefinder.topics');
 dojo.require('dojo.parser');
 dojo.require('dijit.InlineEditBox');
 dojo.require('dijit.form.Button');
@@ -22,16 +22,31 @@ dojo.require('dojo.fx');
 dojo.require('dijit.form.TextBox');
 
 
-dojo.mixin(routeFinder, {
+dojo.mixin(routefinder, {
   config: {
-    useLiveMapService: false,
-    useLiveLocationService: false,
-    useLiveRoutingService: false
+    useLiveMapService: true,
+    useLiveLocationService: true,
+    useLiveRoutingService: true
   },
-  init: function(){
   
-    dojo.subscribe(routeFinder.topics.onAddressAdded, function(address){
-      var widget = new routeFinder.Location({
+  /**
+   * 
+   * @param {Object} config An object containing overrides to the default config values
+   * {Boolean} useLiveMapService
+   * {Boolean} useLiveLocationService
+   * {Boolean} useLiveRoutingService 
+   */
+  init: function(config){
+    
+    // override default values with any values from the config argument
+  	dojo.mixin(routefinder.config, config);
+	
+	// init any module dependencies that have an init function
+  	routefinder.mapping.init();
+
+	
+    dojo.subscribe(routefinder.topics.onAddressAdded, function(address){
+      var widget = new routefinder.Location({
         unformattedAddress: address,
         title: address
       });
@@ -52,22 +67,22 @@ dojo.mixin(routeFinder, {
       });
       
       dojo.connect(startLocationHolderWidget, 'onDndDrop', function(source, nodes, copy, target){
-        routeFinder._restyleItems(startLocationHolderWidget, locationHolderWidget);
+        routefinder._restyleItems(startLocationHolderWidget, locationHolderWidget);
       });
       dojo.connect(locationHolderWidget, 'onDndDrop', function(){
-        routeFinder._restyleItems(startLocationHolderWidget, locationHolderWidget);
+        routefinder._restyleItems(startLocationHolderWidget, locationHolderWidget);
       });
             
       var addressesNode = dojo.byId('addressInput');
       
       dojo.connect(dojo.byId('addressInput'), 'onkeyup', function(evt){
         if (evt.keyCode === dojo.keys.ENTER) {
-          routeFinder.locate(addressesNode);
+          routefinder.locate(addressesNode);
         }
       });
       
       dojo.connect(dojo.byId('addAddressButton'), 'click', function(evt){
-        routeFinder.locate(addressesNode);
+        routefinder.locate(addressesNode);
       });
     }
   },
@@ -91,14 +106,21 @@ dojo.mixin(routeFinder, {
     lines = textAreaNode.value.split(/\r\n|\r|\n/);
     dojo.forEach(lines, function(singleLine){
       if (0 !== singleLine.length) {
-        dojo.publish(routeFinder.topics.onAddressAdded, [singleLine]);
+        dojo.publish(routefinder.topics.onAddressAdded, [singleLine]);
       }
     });
     textAreaNode.value = '';
     textAreaNode.focus();
   },
-  flash: function(/*String or Object*/node, /*Number*/ timesToFlash){
-  
+
+/**
+ * Flashes the node
+ * @param {Object} or {String} node A DOM element or its ID
+ * @param {Object} timesToFlash The number of times node should flash
+ * @param {Object} color The hex value of the flash color, including # (e.g. #ff00cc
+ */
+  flash: function(node, timesToFlash, color){
+  	
     node = dojo.byId(node);
     
     // becuase this function is recursive, a zero passed in is significant.  It means we should not animate again
@@ -106,9 +128,12 @@ dojo.mixin(routeFinder, {
       return;
     }
     
-    // if not zero, but undefined, set the default to 3
-    timesToFlash = timesToFlash || 3;
-    
+    // if not zero, but undefined, set the default to 2
+    timesToFlash = timesToFlash || 2;
+
+	// default flash color is yellow
+    color = color || '#FFE600';
+	
     // save the starting color so we can refer back to it after the flash
     var startingColor = dojo.style(node, 'backgroundColor');
     
@@ -117,7 +142,7 @@ dojo.mixin(routeFinder, {
       node: node,
       duration: 25,
       properties: {
-        backgroundColor: '#FFE600'
+        backgroundColor: color
       }
     }), dojo.animateProperty({
       node: node,
@@ -146,473 +171,4 @@ dojo.mixin(routeFinder, {
   }
 });
 
-dojo.addOnLoad(routeFinder, 'init');
-
-
-
-
-/*
-
-
-
-
- dojo.declare('routeFinder.Router', null, {
-
-
-
-
- startLocation: undefined,
-
-
-
-
- 
-
-
-
-
- constructor: function(args){
-
-
-
-
- dojo.safeMixin(this, args);
-
-
-
-
- },
-
-
-
-
- 
-
-
-
-
- _orderLocationsInternal: function(remainingLocations, orderedLocations, originalCallback){
-
-
-
-
- if (0 === remainingLocations.length) {
-
-
-
-
- originalCallback({
-
-
-
-
- orderedLocations: orderedLocations
-
-
-
-
- });
-
-
-
-
- return;
-
-
-
-
- }
-
-
-
-
- 
-
-
-
-
- var deferreds = [];
-
-
-
-
- 
-
-
-
-
- dojo.forEach(remainingLocations, function(location){
-
-
-
-
- var jsonpDeferred = dojo.io.script.get({
-
-
-
-
- url: "http://dev.virtualearth.net/REST/v1/Routes",
-
-
-
-
- content: {
-
-
-
-
- "wayPoint.1": dojo.string.substitute('${lat},${lon}', orderedLocations[orderedLocations.length - 1]),
-
-
-
-
- "wayPoint.2": dojo.string.substitute('${lat},${lon}', location),
-
-
-
-
- distanceUnit: "mi",
-
-
-
-
- key: "AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv",
-
-
-
-
- jsonso: location.widgetId
-
-
-
-
- },
-
-
-
-
- jsonp: "jsonp"
-
-
-
-
- });
-
-
-
-
- deferreds.push(jsonpDeferred);
-
-
-
-
- });
-
-
-
-
- 
-
-
-
-
- var deferredList = new dojo.DeferredList(deferreds);
-
-
-
-
- 
-
-
-
-
- var minDistanceLocation;
-
-
-
-
- 
-
-
-
-
- deferredList.addCallback(dojo.hitch(this, function(resultArray){
-
-
-
-
- dojo.forEach(resultArray, function(item, index, array){
-
-
-
-
- var succeeded = item[0];
-
-
-
-
- var response = item[1];
-
-
-
-
- var distance = response.resourceSets[0].resources[0].travelDistance;
-
-
-
-
- 
-
-
-
-
- if (!minDistanceLocation || distance < minDistanceLocation.distance) {
-
-
-
-
- minDistanceLocation = remainingLocations[index];
-
-
-
-
- }
-
-
-
-
- });
-
-
-
-
- 
-
-
-
-
- remainingLocations.splice(remainingLocations.indexOf(minDistanceLocation), 1);
-
-
-
-
- orderedLocations.push(minDistanceLocation);
-
-
-
-
- 
-
-
-
-
- if (0 < remainingLocations.length) {
-
-
-
-
- this._orderLocationsInternal(remainingLocations, orderedLocations, originalCallback);
-
-
-
-
- }
-
-
-
-
- else {
-
-
-
-
- originalCallback({
-
-
-
-
- orderedLocations: orderedLocations
-
-
-
-
- });
-
-
-
-
- }
-
-
-
-
- 
-
-
-
-
- }));
-
-
-
-
- 
-
-
-
-
- },
-
-
-
-
- 
-
-
-
-
- orderLocations: function(locations,  startLocation,  callback){
-
-
-
-
- if (locations instanceof dijit.WidgetSet) {
-
-
-
-
- locations = locations.toArray();
-
-
-
-
- }
-
-
-
-
- 
-
-
-
-
- startLocation.distance = 0;
-
-
-
-
- locations.splice(locations.indexOf(startingNode), 1);
-
-
-
-
- 
-
-
-
-
- var orderedLocations = [startingNode];
-
-
-
-
- 
-
-
-
-
- this._orderLocationsInternal(locations, orderedLocations, callback);
-
-
-
-
- 
-
-
-
-
- 
-
-
-
-
- // for each location, get the distance between last element of orderedLocations.
-
-
-
-
- // When all the calls have returned, then call getNextOrderedLocation
-
-
-
-
- // push the return onto orderedLocations, repeat
-
-
-
-
- 
-
-
-
-
- // once the locations array is empty, reorder the locations, and call the service to get the map,
-
-
-
-
- 
-
-
-
-
- // var counter = locations.length;
-
-
-
-
- // for (var i = 0; i < counter; i++) {
-
-
-
-
- //   var nextLocation = getNextOrderedLocation(locations);
-
-
-
-
- //   locations.splice(locations.indexOf(nextLocation), 1);
-
-
-
-
- //   orderedLocations.push(nextLocation);
-
-
-
-
- 
-
-
-
-
- // reset the locations' distances:
-
-
-
-
- }
-
-
-
-
- });
-
-
-
-
- */
-
-
-
-
+//dojo.addOnLoad(routefinder, 'init');

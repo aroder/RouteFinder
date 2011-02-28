@@ -1,4 +1,4 @@
-dojo.provide('routeFinder.routing');
+dojo.provide('routefinder.routing');
 
 dojo.require('dijit._Widget');
 dojo.require('dijit._Templated');
@@ -8,7 +8,7 @@ dojo.require('dojo.fx');
 dojo.require('dijit.form.TextBox');
 dojo.require('dojo.DeferredList');
 
-dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
+dojo.declare('routefinder.Location', [dijit._Widget, dijit._Templated], {
   title: '',
   unformattedAddress: 'unknown',
   addressLine: 'unknown',
@@ -30,12 +30,12 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
   constructor: function(args){
     this.title = args.title || 'Title';
     this.bingMapsApiKey = args.bingMapsApiKey || 'AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv';
-    this.locationRequestTemplate = dojo.cache('routeFinder', 'templates/locationRequestUrl.txt');
-    this.locationRequestByQueryTemplate = dojo.cache('routeFinder', 'templates/locationRequestByQueryUrl.txt');
+    this.locationRequestTemplate = dojo.cache('routefinder', 'templates/locationRequestUrl.txt');
+    this.locationRequestByQueryTemplate = dojo.cache('routefinder', 'templates/locationRequestByQueryUrl.txt');
   },
   
-  //  templatePath: dojo.moduleUrl('routeFinder', 'templates/location.html'),
-  templateString: dojo.cache('routeFinder', 'templates/location.html'),
+  //  templatePath: dojo.moduleUrl('routefinder', 'templates/location.html'),
+  templateString: dojo.cache('routefinder', 'templates/location.html'),
   
   postCreate: function(){
     this.lookupLocation();
@@ -52,7 +52,7 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
       }
     }));
     dojo.connect(this.domNode, 'onmouseout', dojo.hitch(this, function(evt){
-      if (this.domNode == evt.relatedTarget || routeFinder.isChildOf(evt.relatedTarget, this.domNode)) {
+      if (this.domNode == evt.relatedTarget || routefinder.isChildOf(evt.relatedTarget, this.domNode)) {
         return;
       }
       var anchorNode = dojo.query('.closeButton', evt.target)[0];
@@ -87,7 +87,7 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
   
   // looks up the address using the Bing MAPS REST API.  
   lookupLocation: function(){
-    if (routeFinder.config.useLiveLocationService) {
+    if (routefinder.config.useLiveLocationService) {
       var jsonpArgs = {
         url: this.locationRequestByQueryTemplate,
         handleAs: 'json',
@@ -148,16 +148,18 @@ dojo.declare('routeFinder.Location', [dijit._Widget, dijit._Templated], {
     this.set('lat', point.coordinates[0]);
     this.set('lon', point.coordinates[1]);
     
+	routefinder.flash(this.domNode, 1, '#00ff00');
     //TODO: do entrance animation
     //dojo.style(this.domNode, 'backgroundColor', '#0a0');
   },
   
   markAsNotLocated: function(response){
+  	routefinder.flash(this.domNode, 1, '#ff0000');
     console.log('could not find address');
   },
 });
 
-dojo.declare('routeFinder.Router', null, {
+dojo.declare('routefinder.Router', null, {
   startLocation: undefined,
   
   constructor: function(args){
@@ -221,7 +223,7 @@ dojo.declare('routeFinder.Router', null, {
       locations = locations.toArray();
     }
     
-    if (!routeFinder.config.useLiveRoutingService) {
+    if (!routefinder.config.useLiveRoutingService) {
       callback(locations);
       return;
     }

@@ -1,6 +1,6 @@
-dojo.provide('routeFinder.topics');
+dojo.provide('routefinder.topics');
 
-dojo.mixin(routeFinder.topics, {
-	onAddressAdded: 'routeFinder/onAddressAdded',
-	onExternalDependencyLoaded: 'routeFinder/onDependencyLoaded' // args: [ 'nameOfDependency' ]
+dojo.mixin(routefinder.topics, {
+	onAddressAdded: 'routefinder/onAddressAdded',
+	onExternalDependencyLoaded: 'routefinder/onDependencyLoaded' // args: [ 'nameOfDependency' ]
 });

@@ -1,130 +1,140 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-  <!--<!DOCTYPE HTML>-->
-  <head>
-    <title>RouteFinder, dojo implementation</title>
-    <link rel="stylesheet" href="styles/main.css" />
-    <script src="js/dojo/dojo/dojo.js" djConfig="parseOnLoad: true, isDebug: true, debugAtAllCosts: true">
-    </script>
-    <script>
-      
-      // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
-      dojo.registerModulePath('routeFinder', '../../routeFinder');
-      dojo.require('routeFinder.layer');
-      dojo.require('dijit.layout.TabContainer');
-      dojo.require('dijit.layout.ContentPane');
-      
-      dojo.addOnLoad(function(){
-      
-        dojo.connect(startLocationHolderWidget, 'onDrop', function(source, nodes){
-          startingNode = dijit.getEnclosingWidget(nodes[0]);
-        });
-        
-        dojo.connect(dojo.byId('getRouteButton'), 'click', function(evt){
-        
-          if ('undefined' == typeof(startingNode)) {
-			routeFinder.flash(startLocationHolderWidget.node);
-            return;
-          }
-          
-          var numberOfRoutes = dojo.byId('numberOfRoutes').value;
-          var router = new routeFinder.Router({
-            numberOfRoutes: numberOfRoutes
-          });
-          
-          router.orderLocations(dijit.registry.byClass('routeFinder.Location'), startingNode, function(route){
-            var routeArray = router.splitRoute(route, dojo.byId('numberOfRoutes').value);
+    <!--<!DOCTYPE HTML>-->
+    <head>
+        <title>RouteFinder, dojo implementation</title>
+        <link rel="stylesheet" href="styles/dojoMain.css" />
+        <link rel="stylesheet" href="../assets/styles/main.css" />
+        <script src="js/dojo/dojo/dojo.js" djConfig="parseOnLoad: true, isDebug: true, debugAtAllCosts: true">
+        </script>
+        <script>
             
-            var tabContainer = new dijit.layout.TabContainer({
-              style: 'height: 100%; width: 100%;'
-            });
+            // register so dojo can find the routeFinder module, takes a path relative to the dojo.js file
+            dojo.registerModulePath('routefinder', '../../routefinder');
+            dojo.require('routefinder.layer');
+            dojo.require('dijit.layout.TabContainer');
+            dojo.require('dijit.layout.ContentPane');
             
-            dojo.forEach(routeArray, function(singleRoute, index){
-              var contentPane = new dijit.layout.ContentPane({
-                title: 'Route ' + (index + 1),
-                content: 'map here',
-                singleRoute: singleRoute
-              });
-              
-              var onShowListener = dojo.connect(contentPane, 'onShow', dojo.hitch(contentPane, function(){
-                var routeContainerId = this.id + '_routeInfoContainer';
-                var mapContainerId = this.id + '_mapContainer';
-                
-                var mapContainer = dojo.create('div', {
-                  id: mapContainerId
+            dojo.addOnLoad(function(){
+            
+                routefinder.init({
+                    useLiveMapService: false,
+                    useLiveLocationService: false,
+                    useLiveRoutingService: false
                 });
-                var routeInfoContainer = dojo.create('div', {
-                  id: routeContainerId
+                
+                dojo.connect(startLocationHolderWidget, 'onDrop', function(source, nodes){
+                    startingNode = dijit.getEnclosingWidget(nodes[0]);
                 });
-                routeInfoContainer.appendChild(mapContainer);
-                dojo.place(routeInfoContainer, this.containerNode, 'only');
                 
-                var map = new routeFinder.Map(this.singleRoute, mapContainerId);
-                map.placeAt(routeContainerId);
-                map.startup();
+                dojo.connect(dojo.byId('getRouteButton'), 'click', function(evt){
                 
-                dojo.disconnect(onShowListener);
-              }));
-              
-              
-              tabContainer.addChild(contentPane);
-              
+                    if ('undefined' == typeof(startingNode)) {
+                        routefinder.flash(startLocationHolderWidget.node);
+                        return;
+                    }
+                    
+                    var numberOfRoutes = dojo.byId('numberOfRoutes').value;
+                    var router = new routefinder.Router({
+                        numberOfRoutes: numberOfRoutes
+                    });
+                    
+                    router.orderLocations(dijit.registry.byClass('routefinder.Location'), startingNode, function(route){
+                        var routeArray = router.splitRoute(route, dojo.byId('numberOfRoutes').value);
+                        
+                        var tabContainer = new dijit.layout.TabContainer({
+                            style: 'height: 100%; width: 100%;'
+                        });
+                        
+                        dojo.forEach(routeArray, function(singleRoute, index){
+                            var contentPane = new dijit.layout.ContentPane({
+                                title: 'Route ' + (index + 1),
+                                content: 'map here',
+                                singleRoute: singleRoute
+                            });
+                            
+                            var onShowListener = dojo.connect(contentPane, 'onShow', dojo.hitch(contentPane, function(){
+                                var routeContainerId = this.id + '_routeInfoContainer';
+                                var mapContainerId = this.id + '_mapContainer';
+                                
+                                var mapContainer = dojo.create('div', {
+                                    id: mapContainerId
+                                });
+                                var routeInfoContainer = dojo.create('div', {
+                                    id: routeContainerId
+                                });
+                                routeInfoContainer.appendChild(mapContainer);
+                                dojo.place(routeInfoContainer, this.containerNode, 'only');
+                                
+                                var map = new routefinder.Map(this.singleRoute, mapContainerId);
+                                map.placeAt(routeContainerId);
+                                map.startup();
+                                
+                                dojo.disconnect(onShowListener);
+                            }));
+                            
+                            
+                            tabContainer.addChild(contentPane);
+                            
+                        });
+                        
+                        dojo.empty(dojo.byId('routeTabs'));
+                        tabContainer.placeAt('routeTabs');
+                        tabContainer.startup();
+                    });
+                });
+                
+                dojo.byId('addressInput').focus();
+                
+                // throw some default addresses on there
+                dojo.attr('addressInput', 'value', '4254 S Biscay Cir, 80013\r\n18351 E Hampden Pl, 80013\r\n16983 E Ithaca Cir, 80013\r\n16968 E Kent Dr, 80013\r\n19291 E Quincy Ave, 80013\r\n17806 E Loyola Dr, 80013\r\n');
             });
-            
-            dojo.empty(dojo.byId('routeTabs'));
-            tabContainer.placeAt('routeTabs');
-            tabContainer.startup();
-          });
-        });
-        
-        dojo.byId('addressInput').focus();
-        
-        // throw some default addresses on there
-        dojo.attr('addressInput', 'value', '4254 S Biscay Cir, 80013\r\n18351 E Hampden Pl, 80013\r\n16983 E Ithaca Cir, 80013\r\n16968 E Kent Dr, 80013\r\n19291 E Quincy Ave, 80013\r\n17806 E Loyola Dr, 80013\r\n');
-      });
-    </script>
-  </head>
-  <body class="claro">
-    <table width="100%" class="layout">
-      <tr>
-        <td width="400px">
-          <form class="addressesForm">
-            <div class="header field">
-              <h1>Add Addresses</h1>
-            </div>
-            <div class="field">
-              <label for="numberOfRoutes">
-                Number of Routes
-              </label>
-              <input type="text" id="numberOfRoutes" name="numberOfRoutes" value="1">
-            </div>
-            <div class="field">
-              <label for="addressInput">
-                Type or paste one address per line
-              </label>
-              <textarea id="addressInput" name="addressInput" wrap="off">
-              </textarea>
-            </div>
-            <div class="field">
-            	<a id="addAddressButton" class="button">Add</a>
-				<a id="getRouteButton" class="button">Get Route</a>
-            </div>
-          </form>
-        </td>
-        <td>
-          <div>
-            <div id="startLocationHolder" dojotype="dojo.dnd.Source" jsid="startLocationHolderWidget" class="hidden startLocationHolder emptyStartLocationHolder">
-              <span id="startLocationPromptMessage">Drag Start Location Here</span>
-            </div>
-            <div id="locationHolder" dojotype="dojo.dnd.Source" autosync="true" jsid="locationHolderWidget">
-              <!--        <div dojoType="routeFinder.LocationWidget" unformattedAddress="1770 Carlin St Reno NV" class="dojoDndItem">
-              </div>-->
-            </div>
-          </div>
-          <div id="routeTabs">
-          </div>
-        </td>
-      </tr>
-    </table>
-  </body>
+        </script>
+    </head>
+    <body class="claro">
+        <table width="100%" class="layout">
+            <tr>
+                <td width="400px">
+                    <form class="addressesForm">
+                        <div class="header field">
+                            <h1>Add Addresses</h1>
+                        </div>
+                        <div class="field">
+                            <label for="numberOfRoutes">
+                                Number of Routes
+                            </label>
+                            <input type="text" id="numberOfRoutes" name="numberOfRoutes" value="1">
+                        </div>
+                        <div class="field">
+                            <label for="addressInput">
+                                Type or paste one address per line
+                            </label>
+                            <textarea id="addressInput" name="addressInput" wrap="off">
+                            </textarea>
+                        </div>
+                        <div class="field">
+                            <a id="addAddressButton" class="button">Add</a>
+                            <a id="getRouteButton" class="button">Get Route</a>
+                        </div>
+                    </form>
+                </td>
+                <td>
+                    <div>
+                        <div id="startLocationHolder" dojotype="dojo.dnd.Source" jsid="startLocationHolderWidget" class="hidden startLocationHolder emptyStartLocationHolder">
+                            <span id="startLocationPromptMessage">Drag Start Location Here</span>
+                        </div>
+                        <div id="locationHolder" dojotype="dojo.dnd.Source" autosync="true" jsid="locationHolderWidget">
+                            <!--        <div dojoType="routefinder.LocationWidget" unformattedAddress="1770 Carlin St Reno NV" class="dojoDndItem">
+                            </div>-->
+                        </div>
+                    </div>
+                    <div class="clearfix">
+                        &nbsp;
+                    </div>
+                    <div id="routeTabs">
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </body>
 </html>
