@@ -43,26 +43,21 @@ dojo.declare('routefinder.Location', [dijit._Widget, dijit._Templated], {
   },
   
   startup: function(){
-  	
-    dojo.connect(this.domNode, 'onmouseover', dojo.hitch(this, function(evt){
-      var query = dojo.query('.closeButton', evt.target);
-      if (0 < query.length) {
-        var anchorNode = query[0];
-        dojo.removeClass(anchorNode, 'hidden');
-      }
-    }));
-    dojo.connect(this.domNode, 'onmouseout', dojo.hitch(this, function(evt){
-      if (this.domNode == evt.relatedTarget || routefinder.isChildOf(evt.relatedTarget, this.domNode)) {
-        return;
-      }
-      var anchorNode = dojo.query('.closeButton', evt.target)[0];
-      dojo.addClass(anchorNode, 'hidden');
-      
-    }));
-	dojo.query('.closeButton', this.domNode).connect('onclick', dojo.hitch(this, function(evt) {
-		this.destroyRecursive();
-	}));
+  	var that = this;
 	
+	// show the closer image on mouse over
+    dojo.connect(this.domNode, 'onmouseover', function(){
+      dojo.removeClass(that.closer, 'hidden');
+    });
+	
+	// hide the closer image on mouse out
+	dojo.connect(this.domNode, 'onmouseout', function() {
+		dojo.addClass(that.closer, 'hidden');
+	});
+
+	dojo.connect(this.closer, 'onclick', function() {
+		that.destroyRecursive();
+	});	
   },
   
   attributeMap: {
@@ -230,7 +225,6 @@ dojo.declare('routefinder.Router', null, {
     
     startLocation.distance = 0;
     locations.splice(locations.indexOf(startingNode), 1);
-    
     var orderedLocations = [startingNode];
     
     this._orderLocationsInternal(locations, orderedLocations, callback);
@@ -245,13 +239,18 @@ dojo.declare('routefinder.Router', null, {
    */
   splitRoute: function(route, numberOfRoutes, startLocation){
     if ('undefined' == typeof(startLocation)) {
-      startLocation = route.splice(0, 1);
+      startLocation = route.splice(0, 1)[0];
     }
     
     var routesAfterSplitting = [];
     var routeSize = Math.floor(route.length / numberOfRoutes);
     for (var i = 0; i < numberOfRoutes; i++) {
-      routesAfterSplitting.push(route.splice(0, routeSize));
+		
+		// each singleRoute should consist of the start location and the right number
+		// of locations from the overall route
+		var singleRoute = [startLocation].concat(route.splice(0, routeSize));
+		console.log(singleRoute[0].addressLine);
+        routesAfterSplitting.push(singleRoute);
       
       // on the last iteration, add any remaining Locations
       if (numberOfRoutes == i + 1 && 0 < route.length) {

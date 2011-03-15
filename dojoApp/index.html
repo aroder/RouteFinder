@@ -39,13 +39,14 @@
                     });
                     
                     router.orderLocations(dijit.registry.byClass('routefinder.Location'), startingNode, function(route){
+						console.log(route[0].addressLine);
                         var routeArray = router.splitRoute(route, dojo.byId('numberOfRoutes').value);
-                        
                         var tabContainer = new dijit.layout.TabContainer({
                             style: 'height: 100%; width: 100%;'
                         });
                         
                         dojo.forEach(routeArray, function(singleRoute, index){
+console.log(singleRoute[0]);
                             var contentPane = new dijit.layout.ContentPane({
                                 title: 'Route ' + (index + 1),
                                 content: 'map here',

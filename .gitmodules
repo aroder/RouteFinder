@@ -4,3 +4,6 @@
 [submodule "dijit"]
 	path = dijit
 	url = https://github.com/dojo/dijit.git
+[submodule "steal"]
+	path = steal
+	url = https://github.com/jupiterjs/steal.git
