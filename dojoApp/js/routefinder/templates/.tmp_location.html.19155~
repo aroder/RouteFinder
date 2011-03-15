@@ -1,0 +1,12 @@
+<div class="dojoDndItem location">
+  <!--<div dojoAttachPoint="titleNode" style="background-color: #f00;">${title}</div>-->
+  <div>
+    <div dojoAttachPoint="addressLineNode" class="nowrap">
+      ${addressLine}
+    </div>
+    <div class="nowrap">
+      <span class="addressPortion2"><span dojoAttachPoint="cityNode">${city}</span>, <span dojoAttachPoint="stateNode">${state}</span>, <span dojoAttachPoint="zipNode">${zip}</span></span>
+    </div>
+  </div>
+  <a class="closeButton hidden">&nbsp;</a>
+</div>
