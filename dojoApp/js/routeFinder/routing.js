@@ -194,13 +194,23 @@ dojo.declare('routefinder.Router', null, {
       dojo.forEach(resultArray, function(item, index, array){
         var succeeded = item[0];
         var response = item[1];
-        var distance = response.resourceSets[0].resources[0].travelDistance;
-        
-        if (!minDistanceLocation || distance < minDistanceLocation.distance) {
+        remainingLocations[index].distance = response.resourceSets[0].resources[0].travelDistance;
+        		
+        if (!minDistanceLocation || remainingLocations[index].distance < minDistanceLocation.distance) {
+			
+			
+			if (!minDistanceLocation) {
+				console.log('no mDL, setting to ' + remainingLocations[index].state);
+			}
+			else {
+				console.log('distance to ' + remainingLocations[index].state + ' is only ' + remainingLocations[index].distance + ', it is closer than' + minDistanceLocation.state + ' (' + minDistanceLocation.distance + ')');
+			}
+			
+			
           minDistanceLocation = remainingLocations[index];
         }
       });
-      
+      	  
       remainingLocations.splice(remainingLocations.indexOf(minDistanceLocation), 1);
       orderedLocations.push(minDistanceLocation);
       
@@ -249,7 +259,6 @@ dojo.declare('routefinder.Router', null, {
 		// each singleRoute should consist of the start location and the right number
 		// of locations from the overall route
 		var singleRoute = [startLocation].concat(route.splice(0, routeSize));
-		console.log(singleRoute[0].addressLine);
         routesAfterSplitting.push(singleRoute);
       
       // on the last iteration, add any remaining Locations

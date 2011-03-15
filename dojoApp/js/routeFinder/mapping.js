@@ -54,6 +54,8 @@ dojo.mixin(routefinder.mapping, {
                     
                     // apply the route to the map, and show the route
                     var myOptions = new VERouteOptions();
+					myOptions.VERouteOptimization = VERouteOptimize.MinimizeDistance;
+					
                     myOptions.SetBestMapView = true;
                     myOptions.RouteCallback = myRouteHandler;
                     map.GetDirections(pointArray, myOptions);

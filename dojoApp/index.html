@@ -39,14 +39,15 @@
                     });
                     
                     router.orderLocations(dijit.registry.byClass('routefinder.Location'), startingNode, function(route){
-						console.log(route[0].addressLine);
                         var routeArray = router.splitRoute(route, dojo.byId('numberOfRoutes').value);
                         var tabContainer = new dijit.layout.TabContainer({
                             style: 'height: 100%; width: 100%;'
                         });
                         
                         dojo.forEach(routeArray, function(singleRoute, index){
-console.log(singleRoute[0]);
+dojo.forEach(singleRoute, function(location) {
+	console.log(location.state);
+});
                             var contentPane = new dijit.layout.ContentPane({
                                 title: 'Route ' + (index + 1),
                                 content: 'map here',
@@ -87,8 +88,9 @@ console.log(singleRoute[0]);
                 dojo.byId('addressInput').focus();
                 
                 // throw some default addresses on there
-                dojo.attr('addressInput', 'value', '4254 S Biscay Cir, 80013\r\n18351 E Hampden Pl, 80013\r\n16983 E Ithaca Cir, 80013\r\n16968 E Kent Dr, 80013\r\n19291 E Quincy Ave, 80013\r\n17806 E Loyola Dr, 80013\r\n');
-            });
+                //dojo.attr('addressInput', 'value', '4254 S Biscay Cir, 80013\r\n18351 E Hampden Pl, 80013\r\n16983 E Ithaca Cir, 80013\r\n16968 E Kent Dr, 80013\r\n19291 E Quincy Ave, 80013\r\n17806 E Loyola Dr, 80013\r\n');
+            	dojo.attr('addressInput', 'value', 'CA\r\nUT\r\nCO\r\nKS\r\nNY')
+			});
         </script>
     </head>
     <body class="claro">
