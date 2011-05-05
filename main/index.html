@@ -1,0 +1,65 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="css/main.css" />
+	<style>
+		.inactive {
+		  text-decoration: line-through;
+		}
+	</style>
+	<script src="js/lab.js"></script>
+	<script>
+		$LAB
+		.script('js/jquery-1.6.min.js').wait()
+		.script('js/spine.min.js').wait()				// depends on jquery
+		.script('js/jquery.tmpl.min.js')
+		.script('js/app/models/location.js')
+		.script('js/app/controllers/locationController.js')
+		.script('js/app/controllers/locationListController.js')
+//		.script('js/underscore.js').wait()
+//		.script('js/backbone.js')				// depends on underscore
+//		.script('http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0')
+//		.script('http://ecn.dev.virtualearth.net/mapcontrol/v7.0/js/bin/7.0.20110224212311.97/en-us/veapicore.js')   // must be async loaded by bing maps, not loading explicitly causes new Map() to fail
+//		.script('http://ecn.dev.virtualearth.net/mapcontrol/v7.0/js/bin/7.0.20110224212311.97/en-us/veapidelay.js')  // automatically loaded by bing maps
+		.wait(function() {
+			console.log('all loaded');
+				App.hello();
+
+//				var map = new Microsoft.Maps.Map(document.getElementById('map'), {credentials:'AizyhoiLfqzBSi2yjcHvfb9VZNX4Jc0iN44rx36ux0gt5km-1oPxFdtZL0gZl7dv'});
+		});
+	</script>
+	
+	<script type="text/x-jquery-tmpl" id="locationTemplate">
+<!--    <div class="item {{if done}}done{{/if}}">-->
+		<div class="location {{if !active}}inactive{{/if}}">
+			<p>${name} <a href="#" class="delete">delete</a></p>
+		</div>
+		
+<!--      <div class="view" title="Double click to edit...">
+        <input type="checkbox" {{if done}}checked="checked"{{/if}}> 
+        <span>${name}</span> <a class="destroy"></a>
+      </div>
+      
+      <div class="edit">
+        <input type="text" value="${name}">
+      </div>
+	  -->
+    </div>
+  </script>
+</head>
+<body>
+<div id="map">
+
+</div>
+<div id="leftbar">
+	<div id="locations">
+		<form>
+			<input type="text" class="locationsInput" placeholder="Address or GPS coords"></input>
+		</form>
+		<div class="locationList">
+		
+		</div>
+		<button class="clear">Clear</button>
+	</div>
+</div>
+</body>
+</html>
