@@ -1,9 +1,7 @@
 jQuery(function($) {
 
 	window.LocationListController = Spine.Controller.create({
-		el: $('#locations'),
-		
-		proxied: ['addLocation'],
+		proxied: ['addLocation', 'addAll'],
 		
 		elements: {
 			'.locationsInput': 	'input',
@@ -11,23 +9,19 @@ jQuery(function($) {
 		},
 		
 		events: {
-			'click 		.clear': 	'clear',
 			'submit		form': 		'onInput'
 		},
 		
 		init: function() {
 			Location.bind('create', this.addLocation);
+			Location.bind('refresh', this.addAll);
 			
 			this.input.focus();
 		},
-		
-		clear: function() {
-			console.log('cleared!');
-		},
-		
+				
 		onInput: function(e) {
 			try {
-			Location.create({ name: 'location: ' + this.input.val() });
+			Location.create({ raw: this.input.val() });
 			this.input.val('');
 			this.input.focus();
 			} catch (ex) {
@@ -42,10 +36,14 @@ jQuery(function($) {
 			this.locations.append(view.render().el);
 		},
 		
+		addAll: function() {
+			Location.each(this.addLocation);
+		},
+		
 		hello: function() {
 			console.log('hi from the location list controller');
 		}
 	});
 	
-	window.App = window.LocationListController.init();
+
 });
