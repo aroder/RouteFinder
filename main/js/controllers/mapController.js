@@ -9,15 +9,13 @@ jQuery(function($) {
 
 			Location.bind('locationFound', this.addPin);
 			
-			// center on current location if supported
+			// center on current geolocation if supported,
+			// and create a Location object for it
 			var that = this;
 			if (Modernizr.geolocation){
 				navigator.geolocation.getCurrentPosition(function(position) {
-					// create the Location object
-					Location.create({ raw: position.coords.latitude + ', ' + position.coords.longitude});
-
-					// center the map
 					that.map.setView({zoom: 14, center: new Microsoft.Maps.Location(position.coords.latitude, position.coords.longitude)});
+					Location.create({ raw: position.coords.latitude + ', ' + position.coords.longitude});
 				});
 			}
 		},
